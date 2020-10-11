@@ -42,6 +42,161 @@ class Signup extends Component {
     this.state = initialState;
   }
 
+  handleBlur(validationFunc, e) {
+    const field = e.target.name;
+
+    if (
+      this.state[field]["validateOnChange"] === false &&
+      this.state.submitCalled === false
+    ) {
+      this.setState((state) => ({
+        [field]: {
+          ...state[field],
+          validateOnChange: true,
+          error: validationFunc(state[field].value),
+        },
+      }));
+    }
+
+    return;
+  }
+
+  handlePasswordBlur(validationFunc, e) {
+    const field = e.target.name;
+
+    if (
+      this.state[field]["validateOnChange"] === false &&
+      this.state.submitCalled === false
+    ) {
+      this.setState((state) => ({
+        [field]: {
+          ...state[field],
+          validateOnChange: true,
+          error: validationFunc(state.password1.value, state[field].value),
+        },
+        password1: {
+          ...state.password1,
+          error: validationFunc(state.password1.value, state[field].value),
+        },
+      }));
+    }
+
+    return;
+  }
+
+  handleChange(validationFunc, e) {
+    const field = e.target.name;
+    const fieldVal = e.target.value;
+
+    this.setState((state) => ({
+      [field]: {
+        ...state[field],
+        value: fieldVal,
+        error: state[field]["validateOnChange"] ? validationFunc(fieldVal) : "",
+      },
+    }));
+  }
+
+  handlePasswordChange(validationFunc, e) {
+    const field = e.target.name;
+    const fieldVal = e.target.value;
+
+    this.setState((state) => ({
+      [field]: {
+        ...state[field],
+        value: fieldVal,
+        error: state[field]["validateOnChange"]
+          ? validationFunc(state.password1.value, fieldVal)
+          : "",
+      },
+      password1: {
+        ...state.password1,
+        error: state[field]["validateOnChange"]
+          ? validationFunc(state.password1.value, fieldVal)
+          : "",
+      },
+    }));
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+
+    const {
+      firstname,
+      lastname,
+      username,
+      email,
+      password1,
+      password2,
+    } = this.state;
+
+    const firstnameError = validateFields.validateFirstname(firstname.value);
+    const lastnameError = validateFields.validateLastname(lastname.value);
+    const usernameError = validateFields.validateUsername(username.value);
+    const emailError = validateFields.validateEmail(email.value);
+    const password1Error = validateFields.validatePassword(password1.value);
+    const password2Error = validateFields.validateConfirmPassword(
+      password1.value,
+      password2.value
+    );
+
+    if (
+      [
+        firstnameError,
+        lastnameError,
+        usernameError,
+        emailError,
+        password1Error,
+        password2Error,
+      ].every((e) => e === false)
+    ) {
+      console.log("success");
+
+      this.setState({ ...initialState, allFieldsValidated: true });
+
+      this.showAllFieldsValidated();
+    } else {
+      this.setState((state) => ({
+        firstname: {
+          ...state.firstname,
+          validateOnChange: true,
+          error: firstnameError,
+        },
+        lastname: {
+          ...state.lastname,
+          validateOnChange: true,
+          error: lastnameError,
+        },
+        username: {
+          ...state.username,
+          validateOnChange: true,
+          error: usernameError,
+        },
+        email: {
+          ...state.email,
+          validateOnChange: true,
+          error: emailError,
+        },
+        password1: {
+          ...state.password1,
+          validateOnChange: true,
+          error: password1Error,
+        },
+        password2: {
+          ...state.password2,
+          validateOnChange: true,
+          error: password2Error,
+        },
+      }));
+    }
+  }
+
+  showAllFieldsValidated() {
+    setTimeout(() => {
+      this.setState({ allFieldsValidated: false });
+    }, 1500);
+  }
+
   render() {
     const {
       firstname,
@@ -77,6 +232,7 @@ class Signup extends Component {
                   type="text"
                   name="firstname"
                   id="firstname"
+                  value={firstname.value}
                   placeholder="Enter First Name"
                   className={`form-control ${
                     firstname.error === false
@@ -102,6 +258,7 @@ class Signup extends Component {
                   type="text"
                   name="lastname"
                   id="lastname"
+                  value={lastname.value}
                   placeholder="Enter Last Name"
                   className={`form-control ${
                     lastname.error === false
@@ -127,6 +284,7 @@ class Signup extends Component {
                   type="text"
                   name="username"
                   id="username"
+                  value={username.value}
                   placeholder="Enter Userame"
                   className={`form-control ${
                     username.error === false
@@ -149,9 +307,10 @@ class Signup extends Component {
                   Email
                 </label>
                 <input
-                  type="text"
+                  type="email"
                   name="email"
                   id="email"
+                  value={email.value}
                   placeholder="Enter Email"
                   className={`form-control ${
                     email.error === false
@@ -174,9 +333,10 @@ class Signup extends Component {
                   Password
                 </label>
                 <input
-                  type="text"
+                  type="password"
                   name="password1"
                   id="password1"
+                  value={password1.value}
                   placeholder="Enter Password"
                   className={`form-control ${
                     password1.error === false
@@ -186,16 +346,10 @@ class Signup extends Component {
                       : ""
                   }`}
                   onChange={(e) =>
-                    this.handlePasswordChange(
-                      validateFields.validateSignupPassword,
-                      e
-                    )
+                    this.handleChange(validateFields.validatePassword, e)
                   }
                   onBlur={(e) =>
-                    this.handlePasswordBlur(
-                      validateFields.validateSignupPassword,
-                      e
-                    )
+                    this.handleBlur(validateFields.validatePassword, e)
                   }
                 />
                 <div className="invalid-feedback">{password1.error}</div>
@@ -205,9 +359,10 @@ class Signup extends Component {
                   Confirm Password
                 </label>
                 <input
-                  type="text"
+                  type="password"
                   name="password2"
                   id="password2"
+                  value={password2.value}
                   placeholder="Confirm Password"
                   className={`form-control ${
                     password2.error === false
@@ -218,13 +373,13 @@ class Signup extends Component {
                   }`}
                   onChange={(e) =>
                     this.handlePasswordChange(
-                      validateFields.validateSignupPassword,
+                      validateFields.validateConfirmPassword,
                       e
                     )
                   }
                   onBlur={(e) =>
                     this.handlePasswordBlur(
-                      validateFields.validateSignupPassword,
+                      validateFields.validateConfirmPassword,
                       e
                     )
                   }
