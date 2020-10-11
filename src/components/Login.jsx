@@ -111,7 +111,7 @@ class Login extends Component {
           className="bg-dark d-flex justify-content-center align-items-center"
           style={{ height: "100vh" }}>
           <div
-            className="form border border-white rounded p-3 bg-white"
+            className="form shadow rounded p-3 bg-white"
             style={{ width: "320px" }}>
             <h1 className="mb-3">Log In</h1>
             <div>
@@ -177,7 +177,14 @@ class Login extends Component {
                 <button
                   type="submit"
                   className="btn btn-primary form-control"
-                  onMouseDown={() => this.setState({ submitCalled: true })}>
+                  onMouseDown={() => this.setState({ submitCalled: true })}
+                  disabled={
+                    email.error || password.error
+                      ? true
+                      : email.error === false && password.error === false
+                      ? false
+                      : false
+                  }>
                   Log In
                 </button>
               </div>
