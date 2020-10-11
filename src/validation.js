@@ -21,14 +21,10 @@ class ValidateFields {
     return false;
   }
 
-  validateSignupPassword(password1, password2) {
-    if (validator.isEmpty(password1)) {
-      return "Password is required";
-    } else if (!validator.isLength(password1, { min: 8 })) {
-      return "Password should be minimum 8 characters";
-    } else if (validator.isEmpty(password2)) {
+  validateConfirmPassword(password1, password2) {
+    if (validator.isEmpty(password2)) {
       return "Confirm password is required";
-    } else if (password2 && validator.equals(password1, password2)) {
+    } else if (password1 !== password2) {
       return "Passwords are not equal";
     }
 
