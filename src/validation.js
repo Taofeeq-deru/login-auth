@@ -20,6 +20,48 @@ class ValidateFields {
 
     return false;
   }
+
+  validateSignupPassword(password1, password2) {
+    if (validator.isEmpty(password1)) {
+      return "Password is required";
+    } else if (!validator.isLength(password1, { min: 8 })) {
+      return "Password should be minimum 8 characters";
+    } else if (validator.isEmpty(password2)) {
+      return "Confirm password is required";
+    } else if (password2 && validator.equals(password1, password2)) {
+      return "Passwords are not equal";
+    }
+
+    return false;
+  }
+
+  validateFirstname(firstname) {
+    if (validator.isEmpty(firstname)) {
+      return "First name is required";
+    } else if (!validator.isAlpha(firstname)) {
+      return "First name should contain only letters";
+    }
+
+    return false;
+  }
+
+  validateLastname(lastname) {
+    if (validator.isEmpty(lastname)) {
+      return "Last name is required";
+    } else if (!validator.isAlpha(lastname)) {
+      return "Last name should contain only letters";
+    }
+
+    return false;
+  }
+
+  validateUsername(username) {
+    if (validator.isEmpty(username)) {
+      return "Username is required";
+    }
+
+    return false;
+  }
 }
 
 const validateFields = new ValidateFields();

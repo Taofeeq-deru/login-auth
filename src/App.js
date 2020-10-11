@@ -1,8 +1,8 @@
 import React from "react";
-import { Login } from "./components";
+import { Signup } from "./components";
 
 function App() {
-  return <Login />;
+  return <Signup />;
 }
 
 export default App;
