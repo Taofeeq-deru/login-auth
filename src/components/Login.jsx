@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { validateFields } from "validator";
+import { validateFields } from "../validation";
 
 const initialState = {
   email: {
@@ -20,6 +20,87 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = initialState;
+  }
+  /*
+   * validates the field onBlur if sumbit button is not clicked
+   * set the validateOnChange to true for that field
+   * check for error
+   */
+
+  handleBlur(validationFunc, e) {
+    const field = e.target.name;
+    // validate onBlur only when validateOnChange for that field is false
+    // because if validateOnChange is already true there is no need to validate onBlur
+    if (
+      this.state[field]["validateOnChange"] === false &&
+      this.state.submitCalled === false
+    ) {
+      this.setState((state) => ({
+        [field]: {
+          ...state[field],
+          validateOnChange: true,
+          error: validationFunc(state[field].value),
+        },
+      }));
+    }
+    return;
+  }
+
+  /*
+   * update the value in state for that field
+   * check for error if validateOnChange is true
+   */
+  handleChange(validationFunc, e) {
+    const field = e.target.name;
+    const fieldVal = e.target.value;
+    this.setState((state) => ({
+      [field]: {
+        ...state[field],
+        value: fieldVal,
+        error: state[field]["validateOnChange"] ? validationFunc(fieldVal) : "",
+      },
+    }));
+  }
+
+  /*
+   * validate all fields
+   * check if all fields are valid if yes then submit the Form
+   * otherwise set errors for the feilds in the state
+   */
+  handleSubmit(e) {
+    e.preventDefault();
+    //validate all fields
+    const { email, password } = this.state;
+    const emailError = validateFields.validateEmail(email.value);
+    const passwordError = validateFields.validatePassword(password.value);
+    if ([emailError, passwordError].every((e) => e === false)) {
+      ///no errors, submit form
+      console.log("success");
+
+      //clear state and show all fields are validated
+      this.setState({ ...initialState, allFieldsValidated: true });
+      this.showAllFieldsValidated();
+    } else {
+      //update state with errors
+      this.setState((state) => ({
+        email: {
+          ...state.email,
+          validateOnChange: true,
+          error: emailError,
+        },
+        password: {
+          ...state.password,
+          validateOnChange: true,
+          error: passwordError,
+        },
+      }));
+    }
+  }
+
+  showAllFieldsValidated() {
+    setTimeout(() => {
+      this.setState({ allFieldsValidated: false });
+    }, 1500);
   }
 
   render() {
