@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import { validateFields } from "../validation";
+import axios from "axios";
 
 const initialState = {
-  email: {
+  username: {
     value: "",
     validateOnChange: false,
     error: "",
@@ -18,7 +19,7 @@ const initialState = {
   error: false,
 };
 
-//const API_URL = "http://127.0.0.1:8000/rest-auth";
+const API_URL = "http://127.0.0.1:8000/rest-auth";
 
 class Login extends Component {
   constructor(props) {
@@ -63,6 +64,7 @@ class Login extends Component {
         value: fieldVal,
         error: state[field]["validateOnChange"] ? validationFunc(fieldVal) : "",
       },
+      error: false,
     }));
   }
 
@@ -74,23 +76,50 @@ class Login extends Component {
   async handleSubmit(e) {
     e.preventDefault();
     //validate all fields
-    const { email, password } = this.state;
-    const emailError = validateFields.validateEmail(email.value);
+    const { username, password } = this.state;
+
+    const usernameVal = username.value;
+    const passwordVal = password.value;
+
+    const usernameError = validateFields.validateUsername(username.value);
     const passwordError = validateFields.validatePassword(password.value);
-    if ([emailError, passwordError].every((e) => e === false)) {
+
+    if ([usernameError, passwordError].every((e) => e === false)) {
       ///no errors, submit form
       console.log("success");
 
-      //clear state and show all fields are validated
-      this.setState({ ...initialState, allFieldsValidated: true });
+      //chow all fields are validated, set loading true
+      this.setState({ ...this.state, allFieldsValidated: true, loading: true });
       this.showAllFieldsValidated();
+
+      await axios
+        .post(API_URL + "/login/", {
+          username: usernameVal,
+          password: passwordVal,
+        })
+        .then((resp) => {
+          console.log(resp.data);
+          const token = resp.data.key;
+          localStorage.setItem("token", token);
+          this.setState({ ...initialState, loading: false, error: false });
+          this.props.history.push("/");
+          window.location.reload();
+        })
+        .catch((err) => {
+          console.log(err);
+          this.setState({
+            ...initialState,
+            loading: false,
+            error: "Incorrect username or password",
+          });
+        });
     } else {
       //update state with errors
       this.setState((state) => ({
-        email: {
-          ...state.email,
+        username: {
+          ...state.username,
           validateOnChange: true,
-          error: emailError,
+          error: usernameError,
         },
         password: {
           ...state.password,
@@ -108,7 +137,13 @@ class Login extends Component {
   }
 
   render() {
-    const { email, password, allFieldsValidated } = this.state;
+    const {
+      username,
+      password,
+      allFieldsValidated,
+      loading,
+      error,
+    } = this.state;
     return (
       <>
         <div
@@ -123,33 +158,36 @@ class Login extends Component {
                 <p className="text-success text-center">All fields validated</p>
               )}
             </div>
+            <div>
+              {error && <p className="text-danger text-center">{error}</p>}
+            </div>
             {/**form starts here */}
             <form onSubmit={(e) => this.handleSubmit(e)} className="w-100">
               <div className="form-group">
-                <label htmlFor="email" className="sr-only">
-                  Email
+                <label htmlFor="username" className="sr-only">
+                  Username
                 </label>
                 <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  value={email.value}
+                  type="text"
+                  name="username"
+                  id="username"
+                  value={username.value}
                   className={`form-control ${
-                    email.error === false
+                    username.error === false
                       ? "is-valid"
-                      : email.error
+                      : username.error
                       ? "is-invalid"
                       : ""
                   }`}
-                  placeholder="Enter Email"
+                  placeholder="Enter Username"
                   onChange={(e) =>
-                    this.handleChange(validateFields.validateEmail, e)
+                    this.handleChange(validateFields.validateUsername, e)
                   }
                   onBlur={(e) =>
-                    this.handleBlur(validateFields.validateEmail, e)
+                    this.handleBlur(validateFields.validateUsername, e)
                   }
                 />
-                <div className="invalid-feedback">{email.error}</div>
+                <div className="invalid-feedback">{username.error}</div>
               </div>
               <div className="form-group">
                 <label htmlFor="password" className="sr-only">
@@ -183,12 +221,19 @@ class Login extends Component {
                   className="btn btn-primary form-control"
                   onMouseDown={() => this.setState({ submitCalled: true })}
                   disabled={
-                    email.error || password.error
+                    username.error || password.error
                       ? true
-                      : email.error === false && password.error === false
+                      : username.error === false && password.error === false
                       ? false
-                      : false
+                      : loading
                   }>
+                  {loading && (
+                    <span
+                      className="spinner-border spinner-border-sm"
+                      role="status">
+                      <span className="sr-only">loading...</span>
+                    </span>
+                  )}
                   Log In
                 </button>
               </div>

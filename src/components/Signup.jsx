@@ -166,10 +166,11 @@ class Signup extends Component {
 
       this.setState({ ...this.state, loading: true, allFieldsValidated: true });
       this.showAllFieldsValidated();
+
       await axios
         .post(API_URL + "/registration/", {
-          firstname: firstnameVal,
-          lastname: lastnameVal,
+          first_name: firstnameVal,
+          last_name: lastnameVal,
           username: usernameVal,
           email: emailVal,
           password1: password1Val,
