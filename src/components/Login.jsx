@@ -14,7 +14,11 @@ const initialState = {
   },
   submitCalled: false,
   allFieldsValidated: false,
+  loading: false,
+  error: false,
 };
+
+//const API_URL = "http://127.0.0.1:8000/rest-auth";
 
 class Login extends Component {
   constructor(props) {
@@ -67,7 +71,7 @@ class Login extends Component {
    * check if all fields are valid if yes then submit the Form
    * otherwise set errors for the feilds in the state
    */
-  handleSubmit(e) {
+  async handleSubmit(e) {
     e.preventDefault();
     //validate all fields
     const { email, password } = this.state;

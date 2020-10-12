@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { validateFields } from "../validation";
+import axios from "axios";
 
 const initialState = {
   firstname: {
@@ -34,7 +35,11 @@ const initialState = {
   },
   submitCalled: false,
   allFieldsValidated: false,
+  loading: false,
+  error: false,
 };
+
+const API_URL = "http://127.0.0.1:8000/rest-auth";
 
 class Signup extends Component {
   constructor(props) {
@@ -118,7 +123,7 @@ class Signup extends Component {
     }));
   }
 
-  handleSubmit(e) {
+  async handleSubmit(e) {
     e.preventDefault();
 
     const {
@@ -129,6 +134,13 @@ class Signup extends Component {
       password1,
       password2,
     } = this.state;
+
+    const firstnameVal = firstname.value;
+    const lastnameVal = lastname.value;
+    const usernameVal = username.value;
+    const emailVal = email.value;
+    const password1Val = password1.value;
+    const password2Val = password2.value;
 
     const firstnameError = validateFields.validateFirstname(firstname.value);
     const lastnameError = validateFields.validateLastname(lastname.value);
@@ -152,9 +164,30 @@ class Signup extends Component {
     ) {
       console.log("success");
 
-      this.setState({ ...initialState, allFieldsValidated: true });
-
+      this.setState({ ...this.state, loading: true, allFieldsValidated: true });
       this.showAllFieldsValidated();
+      await axios
+        .post(API_URL + "/registration/", {
+          firstname: firstnameVal,
+          lastname: lastnameVal,
+          username: usernameVal,
+          email: emailVal,
+          password1: password1Val,
+          password2: password2Val,
+        })
+        .then((resp) => {
+          console.log(resp.data);
+          this.setState({ ...initialState, loading: false, error: false });
+          this.props.history.push("/login");
+        })
+        .catch((err) => {
+          console.log(err);
+          this.setState({
+            ...initialState,
+            loading: false,
+            error: "User already exists",
+          });
+        });
     } else {
       this.setState((state) => ({
         firstname: {
@@ -206,6 +239,8 @@ class Signup extends Component {
       password1,
       password2,
       allFieldsValidated,
+      loading,
+      error,
     } = this.state;
 
     return (
@@ -221,6 +256,9 @@ class Signup extends Component {
               {allFieldsValidated && (
                 <p className="text-success text-center">All fields validated</p>
               )}
+            </div>
+            <div>
+              {error && <p className="text-danger text-center">{error}</p>}
             </div>
             {/**form starts here */}
             <form onSubmit={(e) => this.handleSubmit(e)} className="w-100">
@@ -406,8 +444,15 @@ class Signup extends Component {
                         password1.error === false &&
                         password2.error === false
                       ? false
-                      : false
+                      : loading
                   }>
+                  {loading && (
+                    <span
+                      className="spinner-border spinner-border-sm"
+                      role="status">
+                      <span className="sr-only">loading...</span>
+                    </span>
+                  )}
                   Sign Up
                 </button>
               </div>

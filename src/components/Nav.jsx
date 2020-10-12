@@ -10,48 +10,40 @@ class Nav extends Component {
         <nav className="navbar navbar-expand-lg navbar-light bg-light py-0">
           <Link
             to="/"
-            className={`nav-link ${location.pathname === "/" ? "active" : ""}`}>
+            className={`nav-link ${location.pathname === "/" && "active"}`}>
             Home{" "}
-            {location.pathname === "/" ? (
+            {location.pathname === "/" && (
               <span className="sr-only">(current)</span>
-            ) : (
-              ""
             )}
           </Link>
           <Link
             to="/profile"
             className={`nav-link ${
-              location.pathname === "/profile" ? "active" : ""
+              location.pathname === "/profile" && "active"
             }`}>
             Profile{" "}
-            {location.pathname === "/" ? (
+            {location.pathname === "/" && (
               <span className="sr-only">(current)</span>
-            ) : (
-              ""
             )}
           </Link>
           <Link
             to="/login"
             className={`nav-link ${
-              location.pathname === "/login" ? "active" : ""
+              location.pathname === "/login" && "active"
             }`}>
             Log In{" "}
-            {location.pathname === "/" ? (
+            {location.pathname === "/" && (
               <span className="sr-only">(current)</span>
-            ) : (
-              ""
             )}
           </Link>
           <Link
             to="/signup"
             className={`nav-link ${
-              location.pathname === "/signup" ? "active" : ""
+              location.pathname === "/signup" && "active"
             }`}>
             Sign Up{" "}
-            {location.pathname === "/" ? (
+            {location.pathname === "/" && (
               <span className="sr-only">(current)</span>
-            ) : (
-              ""
             )}
           </Link>
         </nav>
