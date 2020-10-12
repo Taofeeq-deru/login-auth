@@ -211,7 +211,7 @@ class Signup extends Component {
     return (
       <>
         <div
-          className="bg-dark d-flex justify-content-center align-items-center"
+          className="d-flex justify-content-center align-items-center"
           style={{ height: "100vh" }}>
           <div
             className="form shadow rounded bg-white p-3"
