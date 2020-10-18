@@ -101,9 +101,9 @@ class Login extends Component {
           console.log(resp.data);
           const token = resp.data.key;
           localStorage.setItem("token", token);
+          console.log(localStorage.getItem("token"));
           this.setState({ ...initialState, loading: false, error: false });
-          this.props.history.push("/");
-          window.location.reload();
+          this.props.history.push("/profile");
         })
         .catch((err) => {
           console.log(err);

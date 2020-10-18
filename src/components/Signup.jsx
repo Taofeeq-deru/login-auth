@@ -3,34 +3,24 @@ import { validateFields } from "../validation";
 import axios from "axios";
 
 const initialState = {
-  firstname: {
-    value: "",
-    validateOnChange: true,
-    error: "",
-  },
-  lastname: {
-    value: "",
-    validateOnChange: true,
-    error: "",
-  },
   username: {
     value: "",
-    validateOnChange: true,
+    validateOnChange: false,
     error: "",
   },
   email: {
     value: "",
-    validateOnChange: true,
+    validateOnChange: false,
     error: "",
   },
   password1: {
     value: "",
-    validateOnChange: true,
+    validateOnChange: false,
     error: "",
   },
   password2: {
     value: "",
-    validateOnChange: true,
+    validateOnChange: false,
     error: "",
   },
   submitCalled: false,
@@ -126,24 +116,13 @@ class Signup extends Component {
   async handleSubmit(e) {
     e.preventDefault();
 
-    const {
-      firstname,
-      lastname,
-      username,
-      email,
-      password1,
-      password2,
-    } = this.state;
+    const { username, email, password1, password2 } = this.state;
 
-    const firstnameVal = firstname.value;
-    const lastnameVal = lastname.value;
     const usernameVal = username.value;
     const emailVal = email.value;
     const password1Val = password1.value;
     const password2Val = password2.value;
 
-    const firstnameError = validateFields.validateFirstname(firstname.value);
-    const lastnameError = validateFields.validateLastname(lastname.value);
     const usernameError = validateFields.validateUsername(username.value);
     const emailError = validateFields.validateEmail(email.value);
     const password1Error = validateFields.validatePassword(password1.value);
@@ -153,14 +132,9 @@ class Signup extends Component {
     );
 
     if (
-      [
-        firstnameError,
-        lastnameError,
-        usernameError,
-        emailError,
-        password1Error,
-        password2Error,
-      ].every((e) => e === false)
+      [usernameError, emailError, password1Error, password2Error].every(
+        (e) => e === false
+      )
     ) {
       console.log("success");
 
@@ -169,8 +143,6 @@ class Signup extends Component {
 
       await axios
         .post(API_URL + "/registration/", {
-          first_name: firstnameVal,
-          last_name: lastnameVal,
           username: usernameVal,
           email: emailVal,
           password1: password1Val,
@@ -178,8 +150,9 @@ class Signup extends Component {
         })
         .then((resp) => {
           console.log(resp.data);
-          this.setState({ ...initialState, loading: false, error: false });
-          this.props.history.push("/login");
+          //this.setState({ ...initialState, loading: false, error: false });
+          //this.props.history.push("/login");
+          this.loginUser(usernameVal, password1Val);
         })
         .catch((err) => {
           console.log(err);
@@ -191,16 +164,6 @@ class Signup extends Component {
         });
     } else {
       this.setState((state) => ({
-        firstname: {
-          ...state.firstname,
-          validateOnChange: true,
-          error: firstnameError,
-        },
-        lastname: {
-          ...state.lastname,
-          validateOnChange: true,
-          error: lastnameError,
-        },
         username: {
           ...state.username,
           validateOnChange: true,
@@ -225,6 +188,25 @@ class Signup extends Component {
     }
   }
 
+  loginUser(username, password) {
+    axios
+      .post(API_URL + "/login/", {
+        username: username,
+        password: password,
+      })
+      .then((resp) => {
+        console.log(resp.data);
+        const token = resp.data.key;
+        localStorage.setItem("token", token);
+        console.log(localStorage.getItem("token"));
+        this.setState({ ...initialState, loading: false, error: false });
+        this.props.history.push("/profile");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
   showAllFieldsValidated() {
     setTimeout(() => {
       this.setState({ allFieldsValidated: false });
@@ -233,8 +215,6 @@ class Signup extends Component {
 
   render() {
     const {
-      firstname,
-      lastname,
       username,
       email,
       password1,
@@ -263,58 +243,6 @@ class Signup extends Component {
             </div>
             {/**form starts here */}
             <form onSubmit={(e) => this.handleSubmit(e)} className="w-100">
-              <div className="form-group">
-                <label htmlFor="firstname" className="sr-only">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  name="firstname"
-                  id="firstname"
-                  value={firstname.value}
-                  placeholder="Enter First Name"
-                  className={`form-control ${
-                    firstname.error === false
-                      ? "is-valid"
-                      : firstname.error
-                      ? "is-invalid"
-                      : ""
-                  }`}
-                  onChange={(e) =>
-                    this.handleChange(validateFields.validateFirstname, e)
-                  }
-                  onBlur={(e) =>
-                    this.handleBlur(validateFields.validateFirstname, e)
-                  }
-                />
-                <div className="invalid-feedback">{firstname.error}</div>
-              </div>
-              <div className="form-group">
-                <label htmlFor="lastname" className="sr-only">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  name="lastname"
-                  id="lastname"
-                  value={lastname.value}
-                  placeholder="Enter Last Name"
-                  className={`form-control ${
-                    lastname.error === false
-                      ? "is-valid"
-                      : lastname.error
-                      ? "is-invalid"
-                      : ""
-                  }`}
-                  onChange={(e) =>
-                    this.handleChange(validateFields.validateLastname, e)
-                  }
-                  onBlur={(e) =>
-                    this.handleBlur(validateFields.validateLastname, e)
-                  }
-                />
-                <div className="invalid-feedback">{lastname.error}</div>
-              </div>
               <div className="form-group">
                 <label htmlFor="username" className="sr-only">
                   Username
@@ -431,16 +359,12 @@ class Signup extends Component {
                   className="btn btn-primary form-control"
                   onMouseDown={() => this.setState({ submitCalled: true })}
                   disabled={
-                    firstname.error ||
-                    lastname.error ||
                     username.error ||
                     email.error ||
                     password1.error ||
                     password2.error
                       ? true
-                      : firstname.error === false &&
-                        lastname.error === false &&
-                        username.error === false &&
+                      : username.error === false &&
                         email.error === false &&
                         password1.error === false &&
                         password2.error === false
